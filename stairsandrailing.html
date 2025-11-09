@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stairs & Railings Load Calculator (NSCP 2015)</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Use Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for number input arrows */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        /* Hide content by default */
+        .calc-content {
+            display: none;
+        }
+        /* Show active content */
+        .calc-content.active {
+            display: block;
+        }
+        /* Style for the main result values */
+        .main-result {
+            @apply font-bold text-3xl text-green-400;
+        }
+        .result-breakdown {
+            @apply text-sm text-gray-400 mt-2;
+        }
+        .lookup-value {
+            @apply bg-gray-700 p-4 rounded-lg text-center;
+        }
+    </style>
+    <!-- Load Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-gray-100 p-4 md:p-8">
+
+    <div class="max-w-2xl mx-auto">
+        
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-blue-400">Stairs & Railings Load Calculator</h1>
+            <p class="text-sm text-gray-400 mt-2">Based on NSCP 2015 Provisions</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="flex mb-6 rounded-lg bg-gray-800 p-1">
+            <button data-target="sdl-stairs" class="tab-btn flex-1 p-3 rounded-md font-semibold text-sm transition-colors duration-200">
+                Stairs (Dead Load)
+            </button>
+            <button data-target="ll-stairs" class="tab-btn flex-1 p-3 rounded-md font-semibold text-sm transition-colors duration-200">
+                Stairs (Live Load)
+            </button>
+            <button data-target="railings" class="tab-btn flex-1 p-3 rounded-md font-semibold text-sm transition-colors duration-200">
+                Railings
+            </button>
+        </div>
+
+        <!-- Calculator Content -->
+        <div class="bg-gray-800 p-6 rounded-lg shadow-2xl">
+
+            <!-- Stairs (Dead Load) Calculator -->
+            <div id="sdl-stairs" class="calc-content space-y-6">
+                <h2 class="text-xl font-bold text-green-400 border-b border-gray-700 pb-3">Stair Flight Superimposed Dead Load (SDL)</h2>
+                <p class="text-sm text-gray-400 -mt-4">This calculates the dead load of a stair flight (per meter width) projected onto a horizontal span.</p>
+                
+                <!-- Inputs -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="sdl-h-run" class="block text-sm font-medium text-gray-300 mb-1">Horizontal Run, L<sub class="text-xs">h</sub> (m)</label>
+                        <input type="number" id="sdl-h-run" value="3.0" step="0.1" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="sdl-v-rise" class="block text-sm font-medium text-gray-300 mb-1">Vertical Rise, L<sub class="text-xs">v</sub> (m)</label>
+                        <input type="number" id="sdl-v-rise" value="1.8" step="0.1" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="sdl-slab" class="block text-sm font-medium text-gray-300 mb-1">Slab Thickness, t<sub class="text-xs">slab</sub> (mm)</label>
+                        <input type="number" id="sdl-slab" value="150" step="10" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="sdl-riser" class="block text-sm font-medium text-gray-300 mb-1">Step Riser Height, R (mm)</label>
+                        <input type="number" id="sdl-riser" value="180" step="10" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="sdl-finish" class="block text-sm font-medium text-gray-300 mb-1">Finishes (e.g., Tiles) (kPa)</label>
+                        <input type="number" id="sdl-finish" value="0.75" step="0.05" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="sdl-unit-wt" class="block text-sm font-medium text-gray-300 mb-1">Concrete Unit Wt. (kN/m³)</label>
+                        <input type="number" id="sdl-unit-wt" value="23.6" step="0.1" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                
+                <!-- SDL Result -->
+                <div class="pt-6 border-t border-gray-700 text-center">
+                    <label class="block text-sm font-medium text-gray-300">Total SDL (Horizontally Projected Line Load)</label>
+                    <div class="main-result mt-1">
+                        <span id="sdl-result-total">0.00</span> kN/m
+                    </div>
+                    <div class="result-breakdown space-y-1 text-left p-4 bg-gray-700 rounded-lg mt-4">
+                        <div class="flex justify-between"><span>Sloped Length (L<sub class="text-xs">s</sub>):</span> <span id="sdl-result-slope" class="font-medium text-gray-200">0.00 m</span></div>
+                        <div class="flex justify-between"><span>Sloped Slab Weight:</span> <span id="sdl-result-slab" class="font-medium text-gray-200">0.00 kN/m</span></div>
+                        <div class="flex justify-between"><span>Triangular Steps Weight:</span> <span id="sdl-result-steps" class="font-medium text-gray-200">0.00 kN/m</span></div>
+                        <div class="flex justify-between"><span>Finishes Weight:</span> <span id="sdl-result-finish" class="font-medium text-gray-200">0.00 kN/m</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stairs (Live Load) Lookup -->
+            <div id="ll-stairs" class="calc-content space-y-6">
+                <h2 class="text-xl font-bold text-green-400 border-b border-gray-700 pb-3">Stairs & Exit Facilities Live Load (LL)</h2>
+                <p class="text-sm text-gray-400 -mt-4">Per NSCP 2015, Table 205-1 & Sec 205.4. The structure must be designed for the condition (Uniform or Concentrated) that produces the greater load effect.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Uniform Load Result -->
+                    <div class="lookup-value">
+                        <label class="block text-sm font-medium text-gray-300">Uniform Live Load (ULL)</label>
+                        <div class="main-result mt-1">
+                            4.8 <span class="text-2xl">kPa</span>
+                        </div>
+                    </div>
+                    <!-- Concentrated Load Result -->
+                    <div class="lookup-value">
+                        <label class="block text-sm font-medium text-gray-300">Concentrated Live Load (CLL)</label>
+                        <div class="main-result mt-1">
+                            13.4 <span class="text-2xl">kN</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">(Applied over a 750mm x 750mm area)</p>
+                    </div>
+                </div>
+                 <p class="text-xs text-gray-500 text-center">Reference: NSCP 2015, Table 205-1 (Item 8) and Section 205.4.</p>
+            </div>
+
+            <!-- Railings (Guardrails) Lookup -->
+            <div id="railings" class="calc-content space-y-6">
+                <h2 class="text-xl font-bold text-green-400 border-b border-gray-700 pb-3">Handrail & Guardrail Loads</h2>
+                 <p class="text-sm text-gray-400 -mt-4">Per NSCP 2015, Sec 205.5.2. Loads are not applied simultaneously; design for the most critical condition.</p>
+                
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="lookup-value">
+                        <label class="block text-sm font-medium text-gray-300">Uniform Load (Transverse or Vertical)</label>
+                        <div class="main-result mt-1">
+                            0.75 <span class="text-2xl">kN/m</span>
+                        </div>
+                    </div>
+                    <div class="lookup-value">
+                        <label class="block text-sm font-medium text-gray-300">Concentrated Load (Any Direction)</label>
+                        <div class="main-result mt-1">
+                            0.90 <span class="text-2xl">kN</span>
+                        </div>
+                         <p class="text-xs text-gray-400 mt-1">(Applied at any point)</p>
+                    </div>
+                </div>
+                 <p class="text-xs text-gray-500 text-center">Reference: NSCP 2015, Section 205.5.2.</p>
+            </div>
+
+
+        </div> <!-- /Calculator Content -->
+        
+        <!-- Disclaimer -->
+        <div class="mt-6 text-center">
+            <p class="text-xs text-gray-500">
+                <strong>Disclaimer:</strong> This tool is for educational purposes. Always verify calculations and code interpretations with a qualified structural engineer.
+            </p>
+        </div>
+
+    </div> <!-- /Max-width container -->
+
+    <script>
+        // --- Get Elements ---
+        const tabs = document.querySelectorAll('.tab-btn');
+        const contents = document.querySelectorAll('.calc-content');
+        
+        // SDL Stair Elements
+        const sdlInputs = [
+            document.getElementById('sdl-h-run'),
+            document.getElementById('sdl-v-rise'),
+            document.getElementById('sdl-slab'),
+            document.getElementById('sdl-riser'),
+            document.getElementById('sdl-finish'),
+            document.getElementById('sdl-unit-wt')
+        ];
+        
+        const sdlResultTotal = document.getElementById('sdl-result-total');
+        const sdlResultSlope = document.getElementById('sdl-result-slope');
+        const sdlResultSlab = document.getElementById('sdl-result-slab');
+        const sdlResultSteps = document.getElementById('sdl-result-steps');
+        const sdlResultFinish = document.getElementById('sdl-result-finish');
+
+        // --- Tab Switching Logic ---
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.getAttribute('data-target');
+
+                // Update tab styles
+                tabs.forEach(t => {
+                    t.classList.remove('bg-blue-600', 'text-white');
+                    t.classList.add('text-gray-300', 'bg-gray-800', 'hover:bg-gray-700');
+                });
+                tab.classList.add('bg-blue-600', 'text-white');
+                tab.classList.remove('text-gray-300', 'bg-gray-800', 'hover:bg-gray-700');
+                
+                // Show/hide content
+                contents.forEach(content => {
+                    if (content.id === target) {
+                        content.classList.add('active');
+                    } else {
+                        content.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // --- Calculation Function ---
+
+        function calculateStairSDL() {
+            // Get values
+            const Lh = parseFloat(document.getElementById('sdl-h-run').value) || 0;
+            const Lv = parseFloat(document.getElementById('sdl-v-rise').value) || 0;
+            const t_slab_mm = parseFloat(document.getElementById('sdl-slab').value) || 0;
+            const R_mm = parseFloat(document.getElementById('sdl-riser').value) || 0;
+            const finish_kPa = parseFloat(document.getElementById('sdl-finish').value) || 0;
+            const unit_wt = parseFloat(document.getElementById('sdl-unit-wt').value) || 0;
+
+            // Convert to meters
+            const t_slab_m = t_slab_mm / 1000.0;
+            const R_m = R_mm / 1000.0;
+
+            // --- Calculations ---
+            
+            // Sloped Length
+            const Ls = Math.sqrt(Math.pow(Lh, 2) + Math.pow(Lv, 2));
+            
+            // Slope factor
+            const slopeFactor = (Lh > 0) ? (Ls / Lh) : 0;
+            
+            // 1. Weight of Sloped Slab (projected horizontally)
+            //    (Thickness * SlopeFactor) * UnitWeight
+            const wt_slab = t_slab_m * slopeFactor * unit_wt;
+            
+            // 2. Weight of Steps (projected horizontally)
+            //    (Avg. thickness of steps) * UnitWeight
+            //    Avg. thickness = (Riser / 2)
+            const wt_steps = (R_m / 2) * unit_wt;
+            
+            // 3. Weight of Finishes (projected horizontally)
+            //    (Finish pressure * SlopeFactor)
+            const wt_finish = finish_kPa * slopeFactor;
+
+            // 4. Total SDL (line load per meter width of stair)
+            const total_sdl = wt_slab + wt_steps + wt_finish;
+
+            // --- Update UI ---
+            function updateOutput(el, value) {
+                el.textContent = isNaN(value) ? '---' : value.toFixed(2);
+            }
+            
+            updateOutput(sdlResultTotal, total_sdl);
+            updateOutput(sdlResultSlope, Ls);
+            updateOutput(sdlResultSlab, wt_slab);
+            updateOutput(sdlResultSteps, wt_steps);
+            updateOutput(sdlResultFinish, wt_finish);
+            
+            // Add units
+            sdlResultSlope.textContent += " m";
+            sdlResultSlab.textContent += " kN/m";
+            sdlResultSteps.textContent += " kN/m";
+            sdlResultFinish.textContent += " kN/m";
+        }
+
+        // --- Event Listeners for Calculation ---
+        sdlInputs.forEach(input => input.addEventListener('input', calculateStairSDL));
+
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial tab
+            tabs[0].click();
+            
+            // Run initial calculations
+            calculateStairSDL();
+        });
+
+    </script>
+</body>
+</html>
